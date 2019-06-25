@@ -10,7 +10,7 @@ RUN apt update && apt dist-upgrade -y && apt install -y \
 
 RUN sed -i.old 's:assistive_technologies=:#assistive_technologies=:' /etc/java-8-openjdk/accessibility.properties
 
-COPY ./nginx.conf /etc/nginx/sites-enabled/default
-COPY index.html ./
+RUN ln -sf ../../../data/nginx.conf /etc/nginx/sites-enabled/default
+COPY ./ ./
 
 CMD [ "nginx", "-g", "daemon off;" ]

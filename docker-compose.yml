@@ -1,6 +1,6 @@
 #!/usr/bin/env docker-compose -p atlassian -f
 
-version: "3"
+version: "3.2"
 
 networks:
   internal:
@@ -9,7 +9,34 @@ networks:
   external:
     driver: bridge
 
+volumes:
+  data:
+    driver: local
+#     driver_opts:
+#      type: nfs
+
 services:
+
+#  data:
+#    restart: "no"
+#    image: pvtmert/atlassian:data
+#    build:
+#      context: ./
+#      dockerfile: data.dockerfile
+#    volumes:
+#      - type: volume
+#        source: data
+#        target: ./
+
+  advisor:
+    restart: always
+    image: google/cadvisor
+    networks:
+      - external
+    ports:
+      - 8000:8080
+    deploy:
+      mode: global
 
   base:
     restart: on-failure
@@ -22,10 +49,23 @@ services:
       - external
     ports:
       - 80:80
+    #volumes_from: data
     volumes:
-      - ./nginx.conf:/etc/nginx/sites-enabled/default
-      - ./:/data
+#      - ./nginx.conf:/etc/nginx/sites-enabled/default
+#      - type: volume
+#        source: data
+#        target: /etc/nginx/sites-enabled
+#        read_only: true
+#        volume:
+#          nocopy: true
+#      - type: bind
+#        source: ./
+#        target: /data
+#        read_only: true
+#        volume:
+#          nocopy: true
     depends_on:
+      #- data
       - jira
       - crowd
       - bamboo
@@ -41,6 +81,7 @@ services:
       dockerfile: jira.dockerfile
     networks:
       - internal
+    #volumes_from: data
     volumes:
       - ./jira.server.xml:/data/conf/server.xml
 
@@ -53,6 +94,7 @@ services:
       dockerfile: confluence.dockerfile
     networks:
       - internal
+    #volumes_from: data
     volumes:
       - ./confluence.server.xml:/data/conf/server.xml
 
@@ -65,6 +107,8 @@ services:
       dockerfile: bitbucket.dockerfile
     networks:
       - internal
+    #volumes_from: data
+    volumes: []
 
   bamboo:
     #command: [ "sleep", "999999999" ]
@@ -75,6 +119,8 @@ services:
       dockerfile: bamboo.dockerfile
     networks:
       - internal
+    #volumes_from: data
+    volumes: []
 
   crowd:
     #command: [ "sleep", "999999999" ]
@@ -85,3 +131,5 @@ services:
       dockerfile: crowd.dockerfile
     networks:
       - internal
+    #volumes_from: data
+    volumes: []
