@@ -17,4 +17,6 @@ RUN ( \
 	echo; \
 ) | tee -a ./confluence/WEB-INF/classes/confluence-init.properties
 
+COPY ./confluence.server.xml /data/conf/server.xml
+
 CMD ./bin/start-confluence.sh -fg

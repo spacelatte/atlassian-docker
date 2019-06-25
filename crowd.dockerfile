@@ -1,6 +1,6 @@
 #!/usr/bin/env docker build --compress -t pvtmert/atlassian:crowd -f
 
-FROM pvtmert/atlassian
+FROM pvtmert/atlassian:base
 
 ARG VERSION=2.12.0
 
