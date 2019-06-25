@@ -1,0 +1,86 @@
+#!/usr/bin/env docker-compose -p atlassian -f
+
+version: "3"
+
+networks:
+  internal:
+    driver: bridge
+    internal: true
+  external:
+    driver: bridge
+
+services:
+
+  base:
+    restart: on-failure
+    image: pvtmert/atlassian:base
+    build:
+      context: ./
+      dockerfile: base.dockerfile
+    networks:
+      - internal
+      - external
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/sites-enabled/default
+      - ./:/data
+    depends_on:
+      - jira
+      - crowd
+      - bamboo
+      - bitbucket
+      - confluence
+
+  jira:
+    #command: sleep 999999999
+    restart: on-failure
+    image: pvtmert/atlassian:jira
+    build:
+      context: ./
+      dockerfile: jira.dockerfile
+    networks:
+      - internal
+    volumes:
+      - ./jira.server.xml:/data/conf/server.xml
+
+  confluence:
+    restart: on-failure
+    image: pvtmert/atlassian:confluence
+    build:
+      context: ./
+      dockerfile: confluence.dockerfile
+    networks:
+      - internal
+    volumes:
+      - ./confluence.server.xml:/data/conf/server.xml
+
+  bitbucket:
+    command: sleep 999999999
+    restart: on-failure
+    image: pvtmert/atlassian:bitbucket
+    build:
+      context: ./
+      dockerfile: bitbucket.dockerfile
+    networks:
+      - internal
+
+  bamboo:
+    command: sleep 999999999
+    restart: on-failure
+    image: pvtmert/atlassian:bamboo
+    build:
+      context: ./
+      dockerfile: bamboo.dockerfile
+    networks:
+      - internal
+
+  crowd:
+    command: sleep 999999999
+    restart: on-failure
+    image: pvtmert/atlassian:crowd
+    build:
+      context: ./
+      dockerfile: crowd.dockerfile
+    networks:
+      - internal
