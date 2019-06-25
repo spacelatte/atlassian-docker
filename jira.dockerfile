@@ -17,6 +17,6 @@ ENV JIRA_HOME /home
 
 RUN sed -i.fix 's:"java version":"openjdk version":' bin/check-java.sh
 
-COPY ./jira.server.xml /data/conf/server.xml
+COPY ./jira.server.xml ./conf/server.xml
 
 CMD ./bin/start-jira.sh -fg

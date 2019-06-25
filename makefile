@@ -19,6 +19,6 @@ fixshebang:
 	sed -i 's:/usr/bin/env:/usr/bin/env -S:' *.dockerfile docker-compose.yml
 
 altbuild:
-	grep env *.dockerfile | tr : \  | while read x; do  \
-		y=( $$x ); $${y[@]:2:5}:$${y[@]:7:4} $${y[0]} .;\
+	grep env base.dockerfile *.dockerfile | tr : \  | while read x; do \
+		y=( $$x ); $${y[@]:2:5}:$${y[@]:7:4} $${y[0]} .; \
 	done

@@ -121,6 +121,7 @@ services:
       - internal
     #volumes_from: data
     volumes: []
+      #- ./bamboo.server.xml:/data/conf/server.xml
 
   crowd:
     #command: [ "sleep", "999999999" ]
@@ -133,3 +134,4 @@ services:
       - internal
     #volumes_from: data
     volumes: []
+      #- ./crowd.server.xml:/data/apache-tomcat/conf/server.xml

@@ -11,4 +11,6 @@ EXPOSE 8085
 
 ENV BAMBOO_HOME /home
 
+COPY ./bamboo.server.xml ./conf/server.xml
+
 CMD ./bin/start-bamboo.sh -fg
