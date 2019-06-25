@@ -1,4 +1,4 @@
-#!/usr/bin/env make -j4 -f
+#!/usr/bin/env make -f
 
 %.docker: %.dockerfile
 	chmod +x $<
@@ -14,3 +14,11 @@ compose: docker-compose.yml containers
 	./$< up
 
 run: compose
+
+fixshebang:
+	sed -i 's:/usr/bin/env:/usr/bin/env -S:' *.dockerfile docker-compose.yml
+
+altbuild:
+	grep env *.dockerfile | tr : \  | while read x; do  \
+		y=( $$x ); $${y[@]:2:5}:$${y[@]:7:4} $${y[0]} .;\
+	done

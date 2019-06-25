@@ -4,10 +4,10 @@ version: "3.2"
 
 networks:
   internal:
-    driver: bridge
+    driver: overlay
     internal: true
   external:
-    driver: bridge
+    driver: overlay
 
 volumes:
   data:
@@ -50,7 +50,7 @@ services:
     ports:
       - 80:80
     #volumes_from: data
-    volumes:
+    volumes: []
 #      - ./nginx.conf:/etc/nginx/sites-enabled/default
 #      - type: volume
 #        source: data
@@ -82,8 +82,8 @@ services:
     networks:
       - internal
     #volumes_from: data
-    volumes:
-      - ./jira.server.xml:/data/conf/server.xml
+    volumes: []
+      #- ./jira.server.xml:/data/conf/server.xml
 
   confluence:
     #command: [ "sleep", "999999999" ]
@@ -95,8 +95,8 @@ services:
     networks:
       - internal
     #volumes_from: data
-    volumes:
-      - ./confluence.server.xml:/data/conf/server.xml
+    volumes: []
+      #- ./confluence.server.xml:/data/conf/server.xml
 
   bitbucket:
     #command: [ "sleep", "999999999" ]
