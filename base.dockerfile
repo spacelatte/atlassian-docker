@@ -1,4 +1,4 @@
-#!/usr/bin/env docker build -t pvtmert/atlassian:base -f
+#!/usr/bin/env docker build --compress -t pvtmert/atlassian:base -f
 
 FROM debian
 
