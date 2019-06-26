@@ -28,7 +28,7 @@ services:
       - external
     ports:
       - 3306:3306
-    volumes: []
+    #volumes: []
       #- type: volume
       #  source: data
       #  target: ./
@@ -55,7 +55,7 @@ services:
     ports:
       - 80:80
     #volumes_from: data
-    volumes: []
+    #volumes: []
 #      - ./nginx.conf:/etc/nginx/sites-enabled/default
 #      - type: volume
 #        source: data
@@ -87,7 +87,7 @@ services:
     networks:
       - internal
     #volumes_from: data
-    volumes: []
+    #volumes: []
       #- ./jira.server.xml:/data/conf/server.xml
 
   confluence:
@@ -100,7 +100,7 @@ services:
     networks:
       - internal
     #volumes_from: data
-    volumes: []
+    #volumes: []
       #- ./confluence.server.xml:/data/conf/server.xml
     depends_on:
       - data
@@ -115,7 +115,7 @@ services:
     networks:
       - internal
     #volumes_from: data
-    volumes: []
+    #volumes: []
     depends_on:
       - data
 
@@ -129,7 +129,7 @@ services:
     networks:
       - internal
     #volumes_from: data
-    volumes: []
+    #volumes: []
       #- ./bamboo.server.xml:/data/conf/server.xml
     depends_on:
       - data
@@ -144,7 +144,7 @@ services:
     networks:
       - internal
     #volumes_from: data
-    volumes: []
+    #volumes: []
       #- ./crowd.server.xml:/data/apache-tomcat/conf/server.xml
     depends_on:
       - data

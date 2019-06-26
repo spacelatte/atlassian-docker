@@ -1,1 +1,4 @@
 pkey.txt
+*.crt
+*.key
+*.csr
