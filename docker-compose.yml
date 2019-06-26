@@ -3,6 +3,8 @@
 version: "3.4"
 
 networks:
+  hostnet:
+    driver: host
   internal:
     driver: overlay
     internal: true
@@ -57,7 +59,7 @@ services:
     restart: always
     image: google/cadvisor
     networks:
-      - external
+      - hostnet
     ports:
       - 8001:8080
     volumes:
