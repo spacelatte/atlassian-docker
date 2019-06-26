@@ -125,6 +125,10 @@ services:
         reservations:
           cpus: "0.50"
           memory: 999M
+      placement:
+        constraints:
+          - node.role == manager
+
 
 
   confluence:
@@ -157,7 +161,9 @@ services:
         reservations:
           cpus: "0.50"
           memory: 999M
-
+      placement:
+        constraints:
+          - node.role == manager
 
   bitbucket:
     #command: [ "sleep", "999999999" ]
@@ -188,7 +194,9 @@ services:
         reservations:
           cpus: "0.50"
           memory: 999M
-
+      placement:
+        constraints:
+          - node.role == manager
 
   bamboo:
     #command: [ "sleep", "999999999" ]
@@ -220,7 +228,9 @@ services:
         reservations:
           cpus: "0.50"
           memory: 999M
-
+      placement:
+        constraints:
+          - node.role == manager
 
   crowd:
     #command: [ "sleep", "999999999" ]
@@ -252,4 +262,6 @@ services:
         reservations:
           cpus: "0.50"
           memory: 999M
-
+      placement:
+        constraints:
+          - node.role == manager
