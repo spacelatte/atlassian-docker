@@ -1,6 +1,6 @@
 #!/usr/bin/env docker-compose -p atlassian -f
 
-version: "3.2"
+version: "3.4"
 
 networks:
   internal:
@@ -11,9 +11,45 @@ networks:
 
 volumes:
   data:
+    external: true
+  share:
     driver: local
-#     driver_opts:
-#      type: nfs
+    driver_opts:
+      type: nfs
+      o: addr=storage,nolock,soft,rw,async,nfsvers=4
+      device: ":/mnt"
+  jira_home:
+  crowd_home:
+  bamboo_home:
+  bitbucket_home:
+  confluence_home:
+
+
+x-cfg-deployment: &deploymentcfg
+  replicas: 1
+  mode: replicated
+  endpoint_mode: vip
+  restart_policy:
+    condition: on-failure
+    max_attempts: 10
+    window: 60s
+    delay: 5s
+  resources:
+    limits:
+      cpus: "2.00"
+      memory: 2G
+    reservations:
+      cpus: "0.50"
+      memory: 1G
+  placement:
+    constraints:
+      - node.role == worker
+
+x-cfg-master: &mastercfg
+  placement:
+    constraints:
+      - node.role == manager
+
 
 services:
 
@@ -42,10 +78,7 @@ services:
       - 8002:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
+    deploy: *mastercfg
 
   data:
     restart: on-failure
@@ -58,14 +91,11 @@ services:
       - external
     ports:
       - 3306:3306
-    #volumes: []
-      #- type: volume
-      #  source: data
-      #  target: ./
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
+    volumes: []
+      - type: volume
+        source: data
+        target: /var/lib/mysql
+    deploy: *mastercfg
 
   base:
     restart: on-failure
@@ -81,29 +111,28 @@ services:
       - 80:80
     #volumes_from: data
     #volumes: []
-#      - ./nginx.conf:/etc/nginx/sites-enabled/default
-#      - type: volume
-#        source: data
-#        target: /etc/nginx/sites-enabled
-#        read_only: true
-#        volume:
-#          nocopy: true
-#      - type: bind
-#        source: ./
-#        target: /data
-#        read_only: true
-#        volume:
-#          nocopy: true
+      #- ./nginx.conf:/etc/nginx/sites-enabled/default
+      #- type: volume
+      #  source: data
+      #  target: /etc/nginx/sites-enabled
+      #  read_only: true
+      #  volume:
+      #    nocopy: true
+      #- type: bind
+      #  source: ./
+      #  target: /data
+      #  read_only: true
+      #  volume:
+      #    nocopy: true
     depends_on:
       - jira
       - crowd
       - bamboo
       - bitbucket
       - confluence
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
+    deploy: *mastercfg
+
+##### JIRA:
 
   jira:
     #command: [ "sleep", "999999999" ]
@@ -115,130 +144,12 @@ services:
     networks:
       - internal
     #volumes_from: data
-    #volumes: []
+    volumes:
+      - jira_home:/home
       #- ./jira.server.xml:/data/conf/server.xml
-    deploy:
-      replicas: 1
-      mode: replicated
-      endpoint_mode: vip
-      restart_policy:
-        condition: on-failure
-        max_attempts: 10
-        window: 60s
-        delay: 5s
-      resources:
-        limits:
-          cpus: "2.00"
-          memory: 2G
-        reservations:
-          cpus: "0.50"
-          memory: 1G
-      placement:
-        constraints:
-          - node.role == worker
+    deploy: *deploymentcfg
 
-
-
-  confluence:
-    #command: [ "sleep", "999999999" ]
-    restart: on-failure
-    image: pvtmert/atlassian:confluence
-    build:
-      context: ./
-      dockerfile: confluence.dockerfile
-    networks:
-      - internal
-    #volumes_from: data
-    #volumes: []
-      #- ./confluence.server.xml:/data/conf/server.xml
-    depends_on:
-      - data
-    deploy:
-      replicas: 1
-      mode: replicated
-      endpoint_mode: vip
-      restart_policy:
-        condition: on-failure
-        max_attempts: 10
-        window: 60s
-        delay: 5s
-      resources:
-        limits:
-          cpus: "2.00"
-          memory: 2G
-        reservations:
-          cpus: "0.50"
-          memory: 1G
-      placement:
-        constraints:
-          - node.role == worker
-
-  bitbucket:
-    #command: [ "sleep", "999999999" ]
-    restart: on-failure
-    image: pvtmert/atlassian:bitbucket
-    build:
-      context: ./
-      dockerfile: bitbucket.dockerfile
-    networks:
-      - internal
-    #volumes_from: data
-    #volumes: []
-    depends_on:
-      - data
-    deploy:
-      replicas: 1
-      mode: replicated
-      endpoint_mode: vip
-      restart_policy:
-        condition: on-failure
-        max_attempts: 10
-        window: 60s
-        delay: 5s
-      resources:
-        limits:
-          cpus: "2.00"
-          memory: 2G
-        reservations:
-          cpus: "0.50"
-          memory: 1G
-      placement:
-        constraints:
-          - node.role == worker
-
-  bamboo:
-    #command: [ "sleep", "999999999" ]
-    restart: on-failure
-    image: pvtmert/atlassian:bamboo
-    build:
-      context: ./
-      dockerfile: bamboo.dockerfile
-    networks:
-      - internal
-    #volumes_from: data
-    #volumes: []
-      #- ./bamboo.server.xml:/data/conf/server.xml
-    depends_on:
-      - data
-    deploy:
-      replicas: 1
-      mode: replicated
-      endpoint_mode: vip
-      restart_policy:
-        condition: on-failure
-        max_attempts: 10
-        window: 60s
-        delay: 5s
-      resources:
-        limits:
-          cpus: "2.00"
-          memory: 2G
-        reservations:
-          cpus: "0.50"
-          memory: 1G
-      placement:
-        constraints:
-          - node.role == worker
+##### CROWD:
 
   crowd:
     #command: [ "sleep", "999999999" ]
@@ -250,26 +161,66 @@ services:
     networks:
       - internal
     #volumes_from: data
-    #volumes: []
+    volumes:
+      - crowd_home:/home
       #- ./crowd.server.xml:/data/apache-tomcat/conf/server.xml
     depends_on:
       - data
-    deploy:
-      replicas: 1
-      mode: replicated
-      endpoint_mode: vip
-      restart_policy:
-        condition: on-failure
-        max_attempts: 10
-        window: 60s
-        delay: 5s
-      resources:
-        limits:
-          cpus: "2.00"
-          memory: 2G
-        reservations:
-          cpus: "0.50"
-          memory: 1G
-      placement:
-        constraints:
-          - node.role == worker
+    deploy: *deploymentcfg
+
+##### BAMBOO:
+
+  bamboo:
+    #command: [ "sleep", "999999999" ]
+    restart: on-failure
+    image: pvtmert/atlassian:bamboo
+    build:
+      context: ./
+      dockerfile: bamboo.dockerfile
+    networks:
+      - internal
+    #volumes_from: data
+    volumes:
+      - bamboo_home:/home
+      #- ./bamboo.server.xml:/data/conf/server.xml
+    depends_on:
+      - data
+    deploy: *deploymentcfg
+
+##### BITBUCKET:
+
+  bitbucket:
+    #command: [ "sleep", "999999999" ]
+    restart: on-failure
+    image: pvtmert/atlassian:bitbucket
+    build:
+      context: ./
+      dockerfile: bitbucket.dockerfile
+    networks:
+      - internal
+    #volumes_from: data
+    volumes:
+      - bitbucket_home:/home
+    depends_on:
+      - data
+    deploy: *deploymentcfg
+
+
+##### CONFLUENCE:
+
+  confluence:
+    #command: [ "sleep", "999999999" ]
+    restart: on-failure
+    image: pvtmert/atlassian:confluence
+    build:
+      context: ./
+      dockerfile: confluence.dockerfile
+    networks:
+      - internal
+    #volumes_from: data
+    volumes:
+      - confluence_home:/home
+      #- ./confluence.server.xml:/data/conf/server.xml
+    depends_on:
+      - data
+    deploy: *deploymentcfg
