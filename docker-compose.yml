@@ -60,9 +60,7 @@ services:
     restart: always
     image: google/cadvisor
     networks:
-      - hostnet
-    ports:
-      - "8080"
+      hostnet: {}
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
