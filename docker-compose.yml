@@ -30,6 +30,8 @@ services:
   visual:
     restart: always
     image: dockersamples/visualizer:stable
+    networks:
+      - external
     ports:
       - 8002:8080
     volumes:
