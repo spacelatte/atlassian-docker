@@ -129,7 +129,7 @@ services:
           memory: 999M
       placement:
         constraints:
-          - node.role == manager
+          - node.role == worker
 
 
 
@@ -165,7 +165,7 @@ services:
           memory: 999M
       placement:
         constraints:
-          - node.role == manager
+          - node.role == worker
 
   bitbucket:
     #command: [ "sleep", "999999999" ]
@@ -198,7 +198,7 @@ services:
           memory: 999M
       placement:
         constraints:
-          - node.role == manager
+          - node.role == worker
 
   bamboo:
     #command: [ "sleep", "999999999" ]
@@ -232,7 +232,7 @@ services:
           memory: 999M
       placement:
         constraints:
-          - node.role == manager
+          - node.role == worker
 
   crowd:
     #command: [ "sleep", "999999999" ]
@@ -266,4 +266,4 @@ services:
           memory: 999M
       placement:
         constraints:
-          - node.role == manager
+          - node.role == worker
