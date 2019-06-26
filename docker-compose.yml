@@ -91,7 +91,7 @@ services:
       - external
     ports:
       - 3306:3306
-    volumes: []
+    volumes:
       - type: volume
         source: data
         target: /var/lib/mysql
