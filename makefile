@@ -22,3 +22,7 @@ altbuild:
 	grep env base.dockerfile *.dockerfile | tr : \  | while read x; do \
 		y=( $$x ); $${y[@]:2:5}:$${y[@]:7:4} $${y[0]} .; \
 	done
+
+pull:
+	echo base data jira crowd bamboo bitbucket confluence | tr \  \\n \
+	| xargs -n1 -I% -- docker pull pvtmert/atlassian:%
