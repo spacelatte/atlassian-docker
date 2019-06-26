@@ -1,11 +1,11 @@
 #!/usr/bin/env docker-compose -p atlassian -f
 
-version: "3.4"
+version: "3.7"
 
 networks:
   hostnet:
-    external:
-      name: host
+    name: host
+    external: true
   internal:
     driver: overlay
     internal: true
@@ -62,7 +62,7 @@ services:
     networks:
       - hostnet
     ports:
-      - 8001:8080
+      - "8080"
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
