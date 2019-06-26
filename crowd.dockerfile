@@ -9,4 +9,6 @@ RUN curl -#L https://www.atlassian.com/software/crowd/downloads/binary/atlassian
 
 COPY ./crowd.server.xml ./apache-tomcat/conf/server.xml
 
+EXPOSE 8095
+
 CMD ./start_crowd.sh run; while pidof java; do sleep 1; done
