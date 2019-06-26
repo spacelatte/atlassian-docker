@@ -128,11 +128,11 @@ services:
         delay: 5s
       resources:
         limits:
-          cpus: "1.00"
-          memory: 1024M
+          cpus: "2.00"
+          memory: 2G
         reservations:
           cpus: "0.50"
-          memory: 999M
+          memory: 1G
       placement:
         constraints:
           - node.role == worker
@@ -164,11 +164,11 @@ services:
         delay: 5s
       resources:
         limits:
-          cpus: "1.00"
-          memory: 1024M
+          cpus: "2.00"
+          memory: 2G
         reservations:
           cpus: "0.50"
-          memory: 999M
+          memory: 1G
       placement:
         constraints:
           - node.role == worker
@@ -197,11 +197,11 @@ services:
         delay: 5s
       resources:
         limits:
-          cpus: "1.00"
-          memory: 1024M
+          cpus: "2.00"
+          memory: 2G
         reservations:
           cpus: "0.50"
-          memory: 999M
+          memory: 1G
       placement:
         constraints:
           - node.role == worker
@@ -231,11 +231,11 @@ services:
         delay: 5s
       resources:
         limits:
-          cpus: "1.00"
-          memory: 1024M
+          cpus: "2.00"
+          memory: 2G
         reservations:
           cpus: "0.50"
-          memory: 999M
+          memory: 1G
       placement:
         constraints:
           - node.role == worker
@@ -265,11 +265,11 @@ services:
         delay: 5s
       resources:
         limits:
-          cpus: "1.00"
-          memory: 1024M
+          cpus: "2.00"
+          memory: 2G
         reservations:
           cpus: "0.50"
-          memory: 999M
+          memory: 1G
       placement:
         constraints:
           - node.role == worker
