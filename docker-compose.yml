@@ -17,6 +17,28 @@ volumes:
 
 services:
 
+  advisor:
+    restart: always
+    image: google/cadvisor
+    networks:
+      - external
+    ports:
+      - 8001:8080
+    deploy:
+      mode: global
+
+  visual:
+    restart: always
+    image: dockersamples/visualizer:stable
+    ports:
+      - 8002:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+
   data:
     restart: on-failure
     image: pvtmert/atlassian:data
@@ -32,16 +54,10 @@ services:
       #- type: volume
       #  source: data
       #  target: ./
-
-  advisor:
-    restart: always
-    image: google/cadvisor
-    networks:
-      - external
-    ports:
-      - 8000:8080
     deploy:
-      mode: global
+      placement:
+        constraints:
+          - node.role == manager
 
   base:
     restart: on-failure
@@ -71,12 +87,15 @@ services:
 #        volume:
 #          nocopy: true
     depends_on:
-      #- data
       - jira
       - crowd
       - bamboo
       - bitbucket
       - confluence
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
 
   jira:
     #command: [ "sleep", "999999999" ]
@@ -90,6 +109,23 @@ services:
     #volumes_from: data
     #volumes: []
       #- ./jira.server.xml:/data/conf/server.xml
+    deploy:
+      replicas: 1
+      mode: replicated
+      endpoint_mode: vip
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
+        window: 60s
+        delay: 5s
+      resources:
+        limits:
+          cpus: "1.00"
+          memory: 1024M
+        reservations:
+          cpus: "0.50"
+          memory: 999M
+
 
   confluence:
     #command: [ "sleep", "999999999" ]
@@ -105,6 +141,23 @@ services:
       #- ./confluence.server.xml:/data/conf/server.xml
     depends_on:
       - data
+    deploy:
+      replicas: 1
+      mode: replicated
+      endpoint_mode: vip
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
+        window: 60s
+        delay: 5s
+      resources:
+        limits:
+          cpus: "1.00"
+          memory: 1024M
+        reservations:
+          cpus: "0.50"
+          memory: 999M
+
 
   bitbucket:
     #command: [ "sleep", "999999999" ]
@@ -119,6 +172,23 @@ services:
     #volumes: []
     depends_on:
       - data
+    deploy:
+      replicas: 1
+      mode: replicated
+      endpoint_mode: vip
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
+        window: 60s
+        delay: 5s
+      resources:
+        limits:
+          cpus: "1.00"
+          memory: 1024M
+        reservations:
+          cpus: "0.50"
+          memory: 999M
+
 
   bamboo:
     #command: [ "sleep", "999999999" ]
@@ -134,6 +204,23 @@ services:
       #- ./bamboo.server.xml:/data/conf/server.xml
     depends_on:
       - data
+    deploy:
+      replicas: 1
+      mode: replicated
+      endpoint_mode: vip
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
+        window: 60s
+        delay: 5s
+      resources:
+        limits:
+          cpus: "1.00"
+          memory: 1024M
+        reservations:
+          cpus: "0.50"
+          memory: 999M
+
 
   crowd:
     #command: [ "sleep", "999999999" ]
@@ -149,3 +236,20 @@ services:
       #- ./crowd.server.xml:/data/apache-tomcat/conf/server.xml
     depends_on:
       - data
+    deploy:
+      replicas: 1
+      mode: replicated
+      endpoint_mode: vip
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
+        window: 60s
+        delay: 5s
+      resources:
+        limits:
+          cpus: "1.00"
+          memory: 1024M
+        reservations:
+          cpus: "0.50"
+          memory: 999M
+
