@@ -17,16 +17,21 @@ volumes:
 
 services:
 
-#  data:
-#    restart: "no"
-#    image: pvtmert/atlassian:data
-#    build:
-#      context: ./
-#      dockerfile: data.dockerfile
-#    volumes:
-#      - type: volume
-#        source: data
-#        target: ./
+  data:
+    restart: on-failure
+    image: pvtmert/atlassian:data
+    build:
+      context: ./
+      dockerfile: data.dockerfile
+    networks:
+      - internal
+      - external
+    ports:
+      - 3306:3306
+    volumes: []
+      #- type: volume
+      #  source: data
+      #  target: ./
 
   advisor:
     restart: always
@@ -97,6 +102,8 @@ services:
     #volumes_from: data
     volumes: []
       #- ./confluence.server.xml:/data/conf/server.xml
+    depends_on:
+      - data
 
   bitbucket:
     #command: [ "sleep", "999999999" ]
@@ -109,6 +116,8 @@ services:
       - internal
     #volumes_from: data
     volumes: []
+    depends_on:
+      - data
 
   bamboo:
     #command: [ "sleep", "999999999" ]
@@ -122,6 +131,8 @@ services:
     #volumes_from: data
     volumes: []
       #- ./bamboo.server.xml:/data/conf/server.xml
+    depends_on:
+      - data
 
   crowd:
     #command: [ "sleep", "999999999" ]
@@ -135,3 +146,5 @@ services:
     #volumes_from: data
     volumes: []
       #- ./crowd.server.xml:/data/apache-tomcat/conf/server.xml
+    depends_on:
+      - data
