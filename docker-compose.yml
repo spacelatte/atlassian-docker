@@ -4,7 +4,8 @@ version: "3.4"
 
 networks:
   hostnet:
-    driver: host
+    name: host
+    external: true
   internal:
     driver: overlay
     internal: true
