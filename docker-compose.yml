@@ -38,9 +38,9 @@ x-cfg-deployment: &deploymentcfg
     window: 60s
     delay: 5s
   resources:
-    limits:
-      cpus: "2.00"
-      memory: 2G
+    limits: {}
+      #cpus: "2.00"
+      #memory: 3G
     reservations:
       cpus: "0.50"
       memory: 1G

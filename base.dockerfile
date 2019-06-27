@@ -8,6 +8,9 @@ RUN apt update && apt dist-upgrade -y && apt install -y \
 	git curl xz-utils nginx-full procps net-tools dnsutils \
 	build-essential openjdk-8-jre-headless openssl ssl-cert
 
+RUN ln -sf /dev/stdout /var/log/nginx/access.log
+RUN ln -sf /dev/stderr /var/log/nginx/error.log
+
 RUN openssl genrsa -out priv.key 4096
 RUN openssl req -new -key priv.key -out req.csr -days 3650 -subj '/CN=*'
 RUN openssl x509 -req -in req.csr -signkey priv.key -out cert.crt -days 3650
