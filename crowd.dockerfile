@@ -17,4 +17,4 @@ RUN ( \
 
 EXPOSE 8095
 
-CMD ./start_crowd.sh run; while pidof java; do sleep 1; done
+CMD ./start_crowd.sh run; tail -f ./apache-tomcat/logs/catalina.out
