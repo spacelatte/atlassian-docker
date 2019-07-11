@@ -26,3 +26,31 @@ altbuild:
 pull:
 	echo base data jira crowd bamboo bitbucket confluence | tr \  \\n \
 	| xargs -n1 -I% -- docker pull pvtmert/atlassian:%
+
+down:
+	ssh -oBatchMode=yes mgr.atl -- docker stack rm atl;
+	sleep 5; for i in mgr {0..5}; do \
+		ssh -oBatchMode=yes $$i.atl -- "\
+			docker ps -qa | xargs docker stop; \
+			yes | docker container prune;  \
+			yes | docker network prune;    \
+			yes | docker volume prune;     \
+			yes | docker image prune;      \
+			yes | docker system prune -f;  \
+		" &\
+	done; wait;
+
+stat:
+	for i in mgr {0..5}; do \
+		ssh -oBatchMode=yes $$i.atl -- "\
+			echo base data jira crowd bamboo bitbucket confluence \
+			| xargs -d\\  -n1 -I% -- docker pull pvtmert/atlassian:%; \
+			docker system df ; \
+			docker ps -a     ; \
+		" ; \
+	done 2>/dev/null
+
+up:
+	scp -oBatchMode=yes docker-compose.yml mgr.atl:.
+	ssh -oBatchMode=yes mgr.atl -- docker stack deploy -c docker-compose.yml atl
+	# ok

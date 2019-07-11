@@ -48,11 +48,6 @@ x-cfg-deployment: &deploymentcfg
     constraints:
       - node.role == worker
 
-x-cfg-master: &mastercfg
-  placement:
-    constraints:
-      - node.role == manager
-
 
 services:
 
@@ -79,7 +74,17 @@ services:
       - 8002:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    deploy: *mastercfg
+    deploy:
+      mode: replicated
+      #replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.type == lb
+        preferences: []
+          # - spread: node.role=manager
+          # - spread: node.role.manager
+          # - spread: node.labels.type
 
   data:
     restart: on-failure
@@ -97,7 +102,17 @@ services:
       - type: volume
         source: data
         target: /var/lib/mysql
-    deploy: *mastercfg
+    deploy:
+      mode: replicated
+      #replicas: 1
+      placement:
+        constraints:
+          #- node.role == manager
+          - node.labels.type == db
+        preferences: []
+          # - spread: node.role=manager
+          # - spread: node.role.manager
+          # - spread: node.labels.type
 
   base:
     restart: on-failure
@@ -132,7 +147,17 @@ services:
       - bamboo
       - bitbucket
       - confluence
-    deploy: *mastercfg
+    deploy:
+      mode: replicated
+      #replicas: 2
+      placement:
+        constraints:
+          - node.role == manager
+          - node.labels.type == lb
+        preferences: []
+          # - spread: node.role=manager
+          # - spread: node.role.manager
+          # - spread: node.labels.type
 
 ##### JIRA:
 
