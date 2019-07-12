@@ -1,10 +1,10 @@
 #!/usr/bin/env docker build --compress -t pvtmert/atlassian:base -f
 
-FROM debian
+FROM debian:9
 
 WORKDIR /data
 
-RUN apt update && apt dist-upgrade -y && apt install -y \
+RUN apt update && apt dist-upgrade -y && apt install -y nano \
 	git curl xz-utils nginx-full procps net-tools dnsutils \
 	build-essential openjdk-8-jre-headless openssl ssl-cert
 
@@ -19,5 +19,14 @@ RUN sed -i.old 's:assistive_technologies=:#assistive_technologies=:' /etc/java-8
 
 RUN ln -sf ../../../data/nginx.conf /etc/nginx/sites-enabled/default
 COPY *.xml *.html *.conf ./
+
+RUN nginx -t
+RUN keytool -importcert -file cert.crt -alias selfsigned \
+	-keystore /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/cacerts \
+	-storepass changeit -noprompt
+
+RUN keytool -import -trustcacerts \
+	-keystore /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/cacerts \
+	-storepass changeit -noprompt -alias root -file cert.crt
 
 CMD [ "nginx", "-g", "daemon off;" ]

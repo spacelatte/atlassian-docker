@@ -15,17 +15,21 @@ networks:
 volumes:
   data:
     external: true
+  data_mysql:
+    external: true
+  data_postgres:
+    external: true
   share:
     driver: local
     driver_opts:
       type: nfs
       o: addr=storage,nolock,soft,rw,async,nfsvers=4
       device: ":/mnt"
-  jira_home:
-  crowd_home:
-  bamboo_home:
-  bitbucket_home:
-  confluence_home:
+  jira_home: {}
+  crowd_home: {}
+  bamboo_home: {}
+  bitbucket_home: {}
+  confluence_home: {}
 
 
 x-cfg-deployment: &deploymentcfg
@@ -48,6 +52,12 @@ x-cfg-deployment: &deploymentcfg
     constraints:
       - node.role == worker
 
+x-cfg-dns: &dnscfg
+  - 127.0.0.11
+  - dns
+  - 8.8.8.8
+  - 1.1.1.1
+  - 9.9.9.9
 
 services:
 
@@ -80,7 +90,7 @@ services:
       placement:
         constraints:
           - node.role == manager
-          - node.labels.type == lb
+          #- node.labels.type == lb
         preferences: []
           # - spread: node.role=manager
           # - spread: node.role.manager
@@ -100,15 +110,43 @@ services:
       - 5432:5432
     volumes:
       - type: volume
-        source: data
+        source: data_mysql
         target: /var/lib/mysql
+      - type: volume
+        source: data_postgres
+        target: /var/lib/postgresql/9.6/main
     deploy:
       mode: replicated
       #replicas: 1
       placement:
         constraints:
-          #- node.role == manager
-          - node.labels.type == db
+          - node.role == manager
+          #- node.labels.type == db
+        preferences: []
+          # - spread: node.role=manager
+          # - spread: node.role.manager
+          # - spread: node.labels.type
+
+  dns:
+    restart: on-failure
+    image: pvtmert/atlassian:dns
+    build:
+      context: ./
+      dockerfile: dns.dockerfile
+    networks:
+      - internal
+      - external
+    ports:
+      - 53:53
+      - 5353:5353
+    volumes: []
+    deploy:
+      mode: replicated
+      #replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+          #- node.labels.type == lb
         preferences: []
           # - spread: node.role=manager
           # - spread: node.role.manager
@@ -121,8 +159,10 @@ services:
       context: ./
       dockerfile: base.dockerfile
     networks:
-      - internal
-      - external
+      external: {}
+      internal:
+        aliases:
+          - atl.direct.n0pe.me
     ports:
       - 443:443
       - 80:80
@@ -168,6 +208,7 @@ services:
     build:
       context: ./
       dockerfile: jira.dockerfile
+    dns: *dnscfg
     networks:
       - internal
     #volumes_from: data
@@ -185,6 +226,7 @@ services:
     build:
       context: ./
       dockerfile: crowd.dockerfile
+    dns: *dnscfg
     networks:
       - internal
     #volumes_from: data
@@ -204,6 +246,7 @@ services:
     build:
       context: ./
       dockerfile: bamboo.dockerfile
+    dns: *dnscfg
     networks:
       - internal
     #volumes_from: data
@@ -223,6 +266,7 @@ services:
     build:
       context: ./
       dockerfile: bitbucket.dockerfile
+    dns: *dnscfg
     networks:
       - internal
     #volumes_from: data
@@ -242,6 +286,7 @@ services:
     build:
       context: ./
       dockerfile: confluence.dockerfile
+    dns: *dnscfg
     networks:
       - internal
     #volumes_from: data

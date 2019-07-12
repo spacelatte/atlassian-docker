@@ -1,6 +1,6 @@
 #!/usr/bin/env docker build --compress -t pvtmert/atlassian:data -f
 
-FROM debian
+FROM debian:9
 
 RUN echo mysql-server mysql-server/root_password password ""       | debconf-set-selections
 RUN echo mysql-server mysql-server/root_password_again password "" | debconf-set-selections
