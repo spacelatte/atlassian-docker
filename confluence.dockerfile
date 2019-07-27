@@ -4,7 +4,7 @@ FROM pvtmert/atlassian:base
 
 ARG VERSION=6.2.3
 
-RUN curl -#L https://www.atlassian.com/software/confluence/downloads/binary/atlassian-confluence-${VERSION}.tar.gz \
+RUN curl -#kL https://www.atlassian.com/software/confluence/downloads/binary/atlassian-confluence-${VERSION}.tar.gz \
 	| tar --strip-components=1 -xz
 
 EXPOSE 8090

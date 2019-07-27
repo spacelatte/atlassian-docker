@@ -4,7 +4,7 @@ FROM pvtmert/atlassian:base
 
 ARG VERSION=5.1.3
 
-RUN curl -#L https://www.atlassian.com/software/stash/downloads/binary/atlassian-bitbucket-${VERSION}.tar.gz \
+RUN curl -#kL https://www.atlassian.com/software/stash/downloads/binary/atlassian-bitbucket-${VERSION}.tar.gz \
 	| tar --strip-components=1 -xz
 
 

@@ -4,7 +4,7 @@ FROM pvtmert/atlassian:base
 
 ARG VERSION=2.12.0
 
-RUN curl -#L https://www.atlassian.com/software/crowd/downloads/binary/atlassian-crowd-${VERSION}.tar.gz \
+RUN curl -#kL https://www.atlassian.com/software/crowd/downloads/binary/atlassian-crowd-${VERSION}.tar.gz \
 	| tar --strip-components=1 -xz
 
 COPY ./crowd.server.xml ./apache-tomcat/conf/server.xml
