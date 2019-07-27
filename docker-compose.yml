@@ -9,8 +9,14 @@ networks:
   internal:
     driver: overlay
     internal: true
+    external: false
+    attachable: true
   external:
     driver: overlay
+    internal: false
+    external: false
+    attachable: true
+
 
 volumes:
   data:
@@ -23,7 +29,7 @@ volumes:
     driver: local
     driver_opts:
       type: nfs
-      o: addr=storage,nolock,soft,rw,async,nfsvers=4
+      o: addr=52.29.68.81,nolock,soft,rw,async,nfsvers=4
       device: ":/mnt"
   jira_home: {}
   crowd_home: {}
@@ -52,12 +58,31 @@ x-cfg-deployment: &deploymentcfg
     constraints:
       - node.role == worker
 
+x-cfg-master: &mastercfg
+  mode: replicated
+  replicas: 1
+  placement:
+    constraints:
+      - node.role == manager
+      #- node.labels.type == lb
+    preferences: []
+      # - spread: node.role=manager
+      # - spread: node.role.manager
+      # - spread: node.labels.type
+
 x-cfg-dns: &dnscfg
   - 127.0.0.11
   - dns
   - 8.8.8.8
   - 1.1.1.1
   - 9.9.9.9
+
+x-cfg-healthcheck: &healthcheckcfg
+  test: wget -qT5 --spider http://0:8080
+  interval: 1m
+  timeout: 10s
+  retries: 3
+
 
 services:
 
@@ -72,6 +97,7 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
+    healthcheck: *healthcheckcfg
     deploy:
       mode: global
 
@@ -84,17 +110,25 @@ services:
       - 8002:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck: *healthcheckcfg
+    deploy: *mastercfg
+
+  dns:
+    restart: on-failure
+    image: pvtmert/atlassian:dns
+    build:
+      context: ./
+      dockerfile: dns.dockerfile
+    networks:
+      - internal
+      - external
+    ports:
+      - 53:53
+      - 5353:5353
+    volumes: []
     deploy:
-      mode: replicated
-      #replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
-          #- node.labels.type == lb
-        preferences: []
-          # - spread: node.role=manager
-          # - spread: node.role.manager
-          # - spread: node.labels.type
+      <<: *mastercfg
+      replicas: 0
 
   data:
     restart: on-failure
@@ -116,41 +150,29 @@ services:
         source: data_postgres
         target: /var/lib/postgresql/9.6/main
     deploy:
-      mode: replicated
-      #replicas: 1
+      <<: *mastercfg
       placement:
         constraints:
           - node.role == manager
-          #- node.labels.type == db
-        preferences: []
-          # - spread: node.role=manager
-          # - spread: node.role.manager
-          # - spread: node.labels.type
+          - node.labels.type == db
 
-  dns:
+  cc:
     restart: on-failure
-    image: pvtmert/atlassian:dns
+    image: severalnines/clustercontrol
     build:
       context: ./
-      dockerfile: dns.dockerfile
+      dockerfile: cc.dockerfile
     networks:
       - internal
-      - external
-    ports:
-      - 53:53
-      - 5353:5353
+    ports: []
     volumes: []
     deploy:
-      mode: replicated
-      #replicas: 1
+      <<: *mastercfg
+      replicas: 0
       placement:
         constraints:
           - node.role == manager
-          #- node.labels.type == lb
-        preferences: []
-          # - spread: node.role=manager
-          # - spread: node.role.manager
-          # - spread: node.labels.type
+          - node.labels.type == db
 
   base:
     restart: on-failure
@@ -167,7 +189,7 @@ services:
       - 443:443
       - 80:80
     #volumes_from: data
-    #volumes: []
+    volumes: []
       #- ./nginx.conf:/etc/nginx/sites-enabled/default
       #- type: volume
       #  source: data
@@ -182,22 +204,59 @@ services:
       #  volume:
       #    nocopy: true
     depends_on:
-      - jira
-      - crowd
-      - bamboo
-      - bitbucket
-      - confluence
+      - data
+      #- jira
+      #- crowd
+      #- bamboo
+      #- bitbucket
+      #- confluence
+    healthcheck:
+      test: curl -skLm5 https://localhost
+      interval: 1m
+      timeout: 10s
+      retries: 3
     deploy:
-      mode: replicated
-      #replicas: 2
+      <<: *mastercfg
       placement:
         constraints:
           - node.role == manager
           - node.labels.type == lb
-        preferences: []
-          # - spread: node.role=manager
-          # - spread: node.role.manager
-          # - spread: node.labels.type
+
+  storage:
+    privileged: true
+    restart: on-failure
+    image: erichough/nfs-server
+    build:
+      context: ./
+      dockerfile: storage.dockerfile
+    networks:
+      - internal
+      - external
+    ports:
+      - 2049:2049
+    volumes:
+      #-           share:/mnt
+      -       jira_home:/home/jira
+      -      crowd_home:/home/crowd
+      -     bamboo_home:/home/bamboo
+      -  bitbucket_home:/home/bitbucket
+      - confluence_home:/home/confluence
+      -   data_postgres:/home/postgres
+      -      data_mysql:/home/mysql
+    environment:
+      NFS_EXPORT_1: /home/jira       *(rw,no_subtree_check)
+      NFS_EXPORT_2: /home/crowd      *(rw,no_subtree_check)
+      NFS_EXPORT_3: /home/bamboo     *(rw,no_subtree_check)
+      NFS_EXPORT_4: /home/bitbucket  *(rw,no_subtree_check)
+      NFS_EXPORT_5: /home/confluence *(rw,no_subtree_check)
+      NFS_EXPORT_6: /home/postgres   *(rw,no_subtree_check)
+      NFS_EXPORT_7: /home/mysql      *(rw,no_subtree_check)
+    cap_add:
+      - SYS_ADMIN
+      - SYS_MODULE
+    deploy:
+      <<: *mastercfg
+      replicas: 0
 
 ##### JIRA:
 
@@ -208,6 +267,8 @@ services:
     build:
       context: ./
       dockerfile: jira.dockerfile
+      args:
+        - VERSION=7.4.0
     dns: *dnscfg
     networks:
       - internal
@@ -215,6 +276,10 @@ services:
     volumes:
       - jira_home:/home
       #- ./jira.server.xml:/data/conf/server.xml
+    depends_on:
+      - storage
+      - data
+      - base
     deploy: *deploymentcfg
 
 ##### CROWD:
@@ -226,6 +291,8 @@ services:
     build:
       context: ./
       dockerfile: crowd.dockerfile
+      args:
+        - VERSION=2.12.0
     dns: *dnscfg
     networks:
       - internal
@@ -234,7 +301,9 @@ services:
       - crowd_home:/home
       #- ./crowd.server.xml:/data/apache-tomcat/conf/server.xml
     depends_on:
+      - storage
       - data
+      - base
     deploy: *deploymentcfg
 
 ##### BAMBOO:
@@ -246,6 +315,8 @@ services:
     build:
       context: ./
       dockerfile: bamboo.dockerfile
+      args:
+        - VERSION=6.1.1
     dns: *dnscfg
     networks:
       - internal
@@ -254,7 +325,9 @@ services:
       - bamboo_home:/home
       #- ./bamboo.server.xml:/data/conf/server.xml
     depends_on:
+      - storage
       - data
+      - base
     deploy: *deploymentcfg
 
 ##### BITBUCKET:
@@ -266,6 +339,8 @@ services:
     build:
       context: ./
       dockerfile: bitbucket.dockerfile
+      args:
+        - VERSION=5.1.3
     dns: *dnscfg
     networks:
       - internal
@@ -273,7 +348,9 @@ services:
     volumes:
       - bitbucket_home:/home
     depends_on:
+      - storage
       - data
+      - base
     deploy: *deploymentcfg
 
 
@@ -286,6 +363,8 @@ services:
     build:
       context: ./
       dockerfile: confluence.dockerfile
+      args:
+        - VERSION=6.6.8
     dns: *dnscfg
     networks:
       - internal
@@ -294,5 +373,7 @@ services:
       - confluence_home:/home
       #- ./confluence.server.xml:/data/conf/server.xml
     depends_on:
+      - storage
       - data
+      - base
     deploy: *deploymentcfg
