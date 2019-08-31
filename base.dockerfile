@@ -33,6 +33,7 @@ RUN ( \
 		echo "[ req_ext ]"                  ; \
 		echo "subjectAltName = @alt_names"  ; \
 		echo "[ alt_names ]"                ; \
+		echo "DNS.0 = docker.internal"      ; \
 		echo "DNS.1 = *.atl.direct.n0pe.me" ; \
 		echo "DNS.2 = *.direct.n0pe.me"     ; \
 		echo "DNS.3 = *.internal"           ; \

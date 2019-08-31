@@ -29,7 +29,7 @@ volumes:
     driver: local
     driver_opts:
       type: nfs
-      o: addr=52.29.68.81,nolock,soft,rw,async,nfsvers=4
+      o: addr=storage,nolock,soft,rw,async,nfsvers=4
       device: ":/mnt"
   jira_home: {}
   crowd_home: {}
