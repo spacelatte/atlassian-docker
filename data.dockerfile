@@ -1,4 +1,4 @@
-#!/usr/bin/env docker build --compress -t pvtmert/atlassian:data -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/atlassian:data -f
 
 FROM debian:9
 

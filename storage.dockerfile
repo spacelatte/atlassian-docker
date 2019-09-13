@@ -1,4 +1,4 @@
-#!/usr/bin/env docker build --compress -t pvtmert/atlassian:storage -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/atlassian:storage -f
 
 FROM debian
 

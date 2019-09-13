@@ -1,4 +1,4 @@
-#!/usr/bin/env docker-compose -p atlassian -f
+#!/usr/bin/env -S docker-compose -p atlassian -f
 
 version: "3.7"
 

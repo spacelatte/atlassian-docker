@@ -1,4 +1,4 @@
-#!/usr/bin/env docker build --compress -t pvtmert/atlassian:dns -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/atlassian:dns -f
 
 FROM debian:9
 

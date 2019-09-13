@@ -1,4 +1,4 @@
-#!/usr/bin/env docker build --compress -t pvtmert/atlassian:jira -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/atlassian:jira -f
 
 FROM pvtmert/atlassian:base
 

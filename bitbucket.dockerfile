@@ -1,4 +1,4 @@
-#!/usr/bin/env docker build --compress -t pvtmert/atlassian:bitbucket -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/atlassian:bitbucket -f
 
 FROM pvtmert/atlassian:base
 

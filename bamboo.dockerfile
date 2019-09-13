@@ -1,4 +1,4 @@
-#!/usr/bin/env docker build --compress -t pvtmert/atlassian:bamboo -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/atlassian:bamboo -f
 
 FROM pvtmert/atlassian:base
 

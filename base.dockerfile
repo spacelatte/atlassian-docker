@@ -1,6 +1,6 @@
-#!/usr/bin/env docker build --compress -t pvtmert/atlassian:base -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/atlassian:base -f
 
-FROM debian:9
+FROM debian:stable
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV JAVA_HOME /opt/jdk8
@@ -10,7 +10,7 @@ WORKDIR /data
 
 RUN apt update && apt dist-upgrade -y && apt install -y nano \
 	git curl xz-utils nginx-full procps net-tools dnsutils \
-	build-essential openssl ssl-cert #openjdk-8-jre-headless
+	build-essential openssl ssl-cert #default-jdk-headless
 
 RUN mkdir -p "${JAVA_HOME}" && \
 	curl -#kL https://src.n0pe.me/~mert/jdk/jdk8u221.linux.x64.tar.gz \

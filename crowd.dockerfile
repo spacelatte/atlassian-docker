@@ -1,4 +1,4 @@
-#!/usr/bin/env docker build --compress -t pvtmert/atlassian:crowd -f
+#!/usr/bin/env -S docker build --compress -t pvtmert/atlassian:crowd -f
 
 FROM pvtmert/atlassian:base
 
