@@ -1,8 +1,9 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/atlassian:dns -f
 
-FROM debian:9
+FROM debian
 
-RUN apt update && apt dist-upgrade -y && \
+RUN apt update
+RUN apt dist-upgrade -y && \
 	apt install -y nano dnsmasq net-tools dnsutils
 
 EXPOSE 53

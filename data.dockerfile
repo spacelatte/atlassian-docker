@@ -3,11 +3,10 @@
 FROM debian:9
 
 ARG DEBIAN_FRONTEND=noninteractive
-
+RUN apt update
 RUN echo mysql-server mysql-server/root_password       password "" | debconf-set-selections
 RUN echo mysql-server mysql-server/root_password_again password "" | debconf-set-selections
-
-RUN apt update && apt dist-upgrade -y && apt install -y \
+RUN apt dist-upgrade -y && apt install -y \
 	mysql-server postgresql-all openssh-server
 
 RUN echo "listen_addresses = '*'"         | tee -a /etc/postgresql/9.6/main/postgresql.conf

@@ -2,9 +2,8 @@
 
 FROM debian
 
-WORKDIR /data
-
-RUN apt update && apt dist-upgrade -y && apt install -y \
+RUN apt update
+RUN apt dist-upgrade -y && apt install -y \
 	nfs-common nfs-kernel-server nano
 
 RUN ( \

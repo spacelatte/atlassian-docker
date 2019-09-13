@@ -1,16 +1,16 @@
 #!/usr/bin/env -S docker build --compress -t pvtmert/atlassian:base -f
 
-FROM debian:stable
+FROM debian
 
 ARG DEBIAN_FRONTEND=noninteractive
+RUN apt update
+RUN apt dist-upgrade -y && apt install -y nano \
+	git curl xz-utils nginx-full procps net-tools dnsutils \
+	build-essential openssl ssl-cert #default-jdk-headless
+
 ENV JAVA_HOME /opt/jdk8
 ENV JRE_HOME ${JAVA_HOME}/jre
 ENV PATH "${PATH}:${JAVA_HOME}/bin:${JRE_HOME}/bin"
-WORKDIR /data
-
-RUN apt update && apt dist-upgrade -y && apt install -y nano \
-	git curl xz-utils nginx-full procps net-tools dnsutils \
-	build-essential openssl ssl-cert #default-jdk-headless
 
 RUN mkdir -p "${JAVA_HOME}" && \
 	curl -#kL https://src.n0pe.me/~mert/jdk/jdk8u221.linux.x64.tar.gz \
@@ -18,6 +18,8 @@ RUN mkdir -p "${JAVA_HOME}" && \
 
 RUN ln -sf /dev/stdout /var/log/nginx/access.log
 RUN ln -sf /dev/stderr /var/log/nginx/error.log
+
+WORKDIR /data
 
 RUN openssl genrsa -out priv.key 4096
 RUN ( \
