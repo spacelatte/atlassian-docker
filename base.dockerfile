@@ -16,12 +16,9 @@ RUN mkdir -p "${JAVA_HOME}" && \
 	curl -#kL https://src.n0pe.me/~mert/jdk/jdk8u221.linux.x64.tar.gz \
 	| tar --strip-components=1 -C "${JAVA_HOME}" -zx
 
-RUN ln -sf /dev/stdout /var/log/nginx/access.log
-RUN ln -sf /dev/stderr /var/log/nginx/error.log
-
 WORKDIR /data
-
-RUN openssl genrsa -out priv.key 4096
+RUN ln -sf bash /bin/sh
+ARG DOMAINS='*.direct.n0pe.me *.atl.direct.n0pe.me'
 RUN ( \
 		echo "[ req ]"                      ; \
 		echo "prompt = no"                  ; \
@@ -35,48 +32,51 @@ RUN ( \
 		echo "[ req_ext ]"                  ; \
 		echo "subjectAltName = @alt_names"  ; \
 		echo "[ alt_names ]"                ; \
-		echo "DNS.0 = docker.internal"      ; \
-		echo "DNS.1 = *.atl.direct.n0pe.me" ; \
-		echo "DNS.2 = *.direct.n0pe.me"     ; \
-		echo "DNS.3 = *.internal"           ; \
-		echo "DNS.4 = *.local"              ; \
-		echo "DNS.5 = *.base"               ; \
-		echo "DNS.6 = internal"             ; \
-		echo "DNS.7 = local"                ; \
-		echo "DNS.8 = base"                 ; \
-		echo "DNS.9 = data"                 ; \
-	) | openssl req -new -x509 -sha256 -key priv.key -out cert.crt -days 3650 -config /dev/stdin
-#RUN openssl x509 -req -in req.csr -signkey priv.key -out cert.crt -days 3650
+		echo "DNS.0 = swarm.docker"         ; \
+		echo "DNS.1 = *.internal"           ; \
+		echo "DNS.2 = *.local"              ; \
+		echo "DNS.3 = *.base"               ; \
+		echo "DNS.4 = internal"             ; \
+		echo "DNS.5 = local"                ; \
+		echo "DNS.6 = base"                 ; \
+		echo "DNS.7 = data"                 ; \
+		export X=8; for dom in ${DOMAINS}; do \
+			echo "DNS.$((X++)) = ${dom}" ; \
+		done; \
+	) | tee ssl.cfg | openssl req -new -x509 -sha256 -newkey rsa:4096 \
+	-keyout priv.key -out cert.crt  \
+	-nodes -set_serial 0 -days 3650 \
+	-config /dev/stdin
 
 RUN test -e /etc/java-8-openjdk/accessibility.properties && \
 	sed -i.old 's:assistive_technologies=:#assistive_technologies=:' \
 	/etc/java-8-openjdk/accessibility.properties || echo "skipping..."
 
-RUN ln -sf ../../../data/nginx.conf /etc/nginx/sites-enabled/default
-COPY *.xml *.html *.conf ./
-RUN nginx -t
-
-### a
-#RUN keytool -importcert -file cert.crt \
-#	-keystore /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/cacerts \
-#	-storepass changeit -alias selfsigned -noprompt
-#RUN keytool -import -trustcacerts \
-#	-keystore /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/cacerts \
-#	-storepass changeit -noprompt -alias root -file cert.crt
-
-### b
-#RUN keytool -importcert -file cert.crt -keystore /etc/ssl/certs/java/cacerts \
-#	-storepass changeit -alias selfsigned -noprompt
-#RUN keytool -import -trustcacerts -keystore /etc/ssl/certs/java/cacerts \
-#	-storepass changeit -noprompt -alias root -file cert.crt
-
-### c
 RUN keytool -importcert -file cert.crt \
 	-keystore "${JAVA_HOME}/jre/lib/security/cacerts" \
 	-storepass changeit -alias selfsigned -noprompt
 RUN keytool -import -trustcacerts \
 	-keystore "${JAVA_HOME}/jre/lib/security/cacerts" \
 	-storepass changeit -noprompt -alias root -file cert.crt
+
+RUN ln -sf /dev/stderr /var/log/nginx/error.log
+RUN ln -sf /dev/stdout /var/log/nginx/access.log
+RUN ln -sf ../../../data/nginx.conf /etc/nginx/sites-enabled/default
+RUN ( \
+		echo "stream {"                   ; \
+		echo "  include stream.d/*.conf;" ; \
+		echo "}"                          ; \
+	) | tee -a /etc/nginx/nginx.conf
+RUN mkdir -p /etc/nginx/stream.d && ( \
+		echo "server {"                    ; \
+		echo "  listen 53;"                ; \
+		echo "  listen 53 udp reuseport;"  ; \
+		echo "  proxy_pass 127.0.0.11:53;" ; \
+		echo "  proxy_timeout 10s;"        ; \
+		echo "}"                           ; \
+	) | tee  /etc/nginx/stream.d/dns.conf
+COPY *.xml *.html *.conf ./
+RUN nginx -t
 
 RUN true \
 	&& cp -v cert.crt /etc/ssl/certs/local.pem          \
