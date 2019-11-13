@@ -6,8 +6,7 @@ RUN apt update
 RUN apt dist-upgrade -y && \
 	apt install -y nano dnsmasq net-tools dnsutils
 
-EXPOSE 53
-EXPOSE 5353
+EXPOSE 53 5353
 WORKDIR /data
 
 COPY *.conf ./

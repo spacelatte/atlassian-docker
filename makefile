@@ -1,4 +1,4 @@
-#!/usr/bin/env make -f
+#!/usr/bin/env -S make -f
 
 JOBS := 1
 SUFF := atl
@@ -20,7 +20,8 @@ compose: docker-compose.yml containers
 run: compose
 
 fixshebang:
-	sed -i 's:/usr/bin/env:/usr/bin/env -S:' *.dockerfile docker-compose.yml
+	sed -i 's:/usr/bin/env docker:/usr/bin/env -S docker:' \
+		*.dockerfile docker-compose.yml
 
 altbuild:
 	grep env base.dockerfile *.dockerfile | tr : \  | while read x; do \
@@ -35,12 +36,12 @@ down:
 	ssh -oBatchMode=yes mgr.$(SUFF) -- docker stack rm $(SUFF);
 	sleep 5; for i in mgr {0..5}; do \
 		echo; ssh -oBatchMode=yes $$i.$(SUFF) -- "\
-			docker ps -qa | xargs docker stop; \
-			yes | docker container prune -f; \
-			yes | docker network prune   -f; \
-			yes | docker volume prune    -f; \
-			yes | docker image prune     -f; \
-			yes | docker system prune    -f; \
+			docker ps -qa | xargs docker stop ; \
+			yes | docker container prune -f   ; \
+			yes | docker network prune   -f   ; \
+			yes | docker volume prune    -f   ; \
+			yes | docker image prune     -f   ; \
+			yes | docker system prune    -f   ; \
 		" & \
 	done; wait;
 
@@ -68,8 +69,9 @@ up:
 rb:
 	ssh mgr.$(SUFF) -- 'uname; \
 		sudo mkdir -p /opt/bin && \
-		sudo curl -#kL https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$$(uname -s)-$$(uname -m) \
-			-o /opt/bin/docker-compose && \
+		FILE=1.24.1/docker-compose-$$(uname -s)-$$(uname -m) \
+		sudo curl -#Lko /opt/bin/docker-compose \
+			https://github.com/docker/compose/releases/download/$$FILE && \
 		sudo chmod +x /opt/bin/docker-compose'
 	ssh -oBatchMode=yes         mgr.$(SUFF) -- rm -vrf  $@/
 	ssh -oBatchMode=yes         mgr.$(SUFF) -- mkdir -p $@/
